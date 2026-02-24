@@ -2,15 +2,25 @@
 
 source ../tools/box.sh ../tools
 
-repo_url="$1"
-name="$2"
-repo_path="/tmp/$2"
-dir="eu"
-file="aceito.txt"
-pad=40
+export PS4='+ [${BASH_SOURCE}:${LINENO}] '
 
-outlog=$(mktemp --suffix=".log")
-errlog=$(mktemp --suffix=".log")
+LOGFILE="trace.log"
+
+: > "$LOGFILE"
+
+OUTLOG=$(mktemp --suffix=".log")
+ERRLOG=$(mktemp --suffix=".log")
+
+TMP=$(dirname -- "$OUTLOG")
+
+REPO_URL="$1"
+NAME="$2"
+REPO_PATH="$TMP/$2"
+DIR="eu"
+FILE="aceito.txt"
+PAD=40
+CHECK=OK
+
 
 if [[ -z "$1" || -z "$2" ]]; then
 	str_error "Usage: $0 <repository_url> <repo_name>"
@@ -21,41 +31,66 @@ fi
 # FUNCTIONS DEFINITION
 # =======================================
 
-checker()
+log()
 {
-	errlog="$(cat $2)"
+	echo -e "|$(date --rfc-3339=seconds)|:[ LEVEL: ${1} ]:| >>>>>>>>>>>> BEGIN"
+	echo -e "$(cat $OUTLOG)"
+	echo -e "$(cat $ERRLOG)"
+	echo -e "<<<<<<<<<<<< END"
+}
 
-	if [[ -n "$errlog" && "$1" = OK ]]; then
-		echo "WARN"
+assert()
+{
+	local func="$1"
+
+	(
+		exec 3>&1
+		BASH_XTRACEFD=3
+		set -xe
+		"$func"
+	) > $OUTLOG 2> $ERRLOG
+	
+	local status=$?
+	
+	local errorlog=$(cat $ERRLOG)
+	local result
+	
+	if [ $status -eq 0 ]; then
+		[ -z "$errorlog" ] && result=OK || result=WARN
 	else
-		echo OK
+		result=FAIL
 	fi
+
+
+	if [ "$result" = FAIL ]; then
+		CHECK=FAIL
+	elif [ "$result" = WARN ] && [ "$CHECK" != FAIL ]; then
+		CHECK=WARN
+	fi
+	
+	log "$result" >> $LOGFILE
+	echo "$errorlog" >&2
+	str_status -p $PAD "$2"  $result
 }
 
 check_repository()
 {
-	git clone "$repo_url" "$repo_path" > $outlog 2> $errlog
-	cat $errlog | sed 's/Cloning into '"'\/tmp\/$name'"'\.\.\.//g' > "${errlog}2"
-	mv ${errlog}2 $errlog
-	[ $? -eq 0 ] && echo "OK" || echo "FAIL"
+	git clone "$REPO_URL" "$REPO_PATH"
 }
 
 check_directory()
 {
-	ls -l "$repo_path/$dir" > $outlog 2> $errlog
-	[ $? -eq 0 ] && echo "OK" || echo "FAIL"
+	ls -l "$REPO_PATH/$DIR"
 }
 
 check_file()
 {
-	ls -l "$repo_path/$dir/$file" > $outlog 2> $errlog
-	[ $? -eq 0 ] && echo "OK" || echo "FAIL"
+	ls -l "$REPO_PATH/$DIR/$FILE"
 }
 
 validate_file()
 {
-	diff "$repo_path/$dir/$file" "aceito.diff" > $outlog 2> $errlog
-	[ $? -eq 0 ] && echo "OK" || echo "FAIL"
+	diff "$REPO_PATH/$DIR/$FILE" "aceito.diff"
 }
 
 
@@ -63,39 +98,32 @@ validate_file()
 # MAIN SCRIPT
 # =======================================
 
-rm -rf "$repo_path"
+[ -d "$REPO_PATH" ] && rm -rf "$REPO_PATH"
 
 box_header "Eu Aceito"
 
-check=$(check_repository)
-cat $errlog
-check=$(checker "$check" "$errlog")
-str_status -p $pad "'eu-aceito' repository existence"  $check
+assert check_repository "'$NAME' repository existence"
 
-if [[ "$check" = OK || "$check" = WARN ]]; then
-	check=$(check_directory)
-	cat $errlog
-	check=$(checker "$check" "$errlog")
-	str_status -p $pad "'eu' directory existence"  $check
+if [ "$CHECK" != FAIL ]; then
+	assert check_directory "'$DIR' directory existence"
 fi
 
-if [[ "$check" = OK || "$check" = WARN ]]; then
-	check=$(check_file)
-	cat $errlog
-	check=$(checker "$check" "$errlog")
-	str_status -p $pad "'aceito.txt' file existence"  $check
+if [ "$CHECK" != FAIL ]; then
+	assert check_file "'$FILE' file existence"
 fi
 
-
-if [[ "$check" = OK || "$check" = WARN ]]; then
-	check=$(validate_file)
-	cat $errlog
-	check=$(checker "$check" "$errlog")
-	str_status -p $pad "Valid file content"  $check
+if [ "$CHECK" != FAIL ]; then
+	assert validate_file "Valid file content"
 fi
 
-str_status -p $pad "Eu aceito result" $check
+echo
 
-rm -rf $repo_path $errlog $outlog
+str_status -p $PAD "Eu aceito result" $CHECK
 
-[ "$check" != FAIL ] || exit 1
+if [ "$CHECK" = FAIL ]; then
+	echo "trave log available at $(pwd)/$LOGFILE"
+fi
+
+rm -rf "$REPO_PATH" "$ERRLOG" "$OUTLOG"
+
+[ "$CHECK" != FAIL ] || exit 1

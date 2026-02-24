@@ -158,7 +158,6 @@ str_error()
 	local opts
 	local mode=echo
 
-	set -e
 	opts=$(getopt \
 		-o pe \
 		--long printf,echo \
@@ -210,7 +209,6 @@ str_line()
 	local boxb
 	local boxe
 
-	set -e
 	opts=$(getopt \
 		-o b:e: \
 		--long box:,end: \
@@ -257,7 +255,6 @@ str_status()
 	local prefix
 	local suffix
 
-	set -e
 	opts=$(getopt \
 		-o l:p:s:P:S: \
 		--long label:,pad:,status:,prefix:,suffix: \
@@ -322,8 +319,6 @@ str()
 	local opts
 	local effx=""
 	local reset=""
-
-	set -e
 
 	opts=$(getopt \
 		-o bcdirstue: \
