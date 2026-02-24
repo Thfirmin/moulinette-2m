@@ -30,12 +30,12 @@ check_repository()
 
 check_directory()
 {
-	ls -l "$REPO_PATH/$DIR"
+	test -d "$REPO_PATH/$DIR"
 }
 
 check_file()
 {
-	ls -l "$REPO_PATH/$DIR/$FILE"
+	test -f "$REPO_PATH/$DIR/$FILE"
 }
 
 validate_file()
