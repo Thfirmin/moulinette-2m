@@ -23,22 +23,22 @@ fi
 # CHECK FUNCTIONS DEFINITION
 # =======================================
 
-check_repository()
+test_repository()
 {
 	git clone "$REPO_URL" "$REPO_PATH"
 }
 
-check_directory()
+test_directory()
 {
 	test -d "$REPO_PATH/$DIR"
 }
 
-check_file()
+test_file()
 {
 	test -f "$REPO_PATH/$DIR/$FILE"
 }
 
-validate_file()
+valid_file()
 {
 	diff "$REPO_PATH/$DIR/$FILE" "aceito.diff"
 }
@@ -52,18 +52,18 @@ validate_file()
 
 box_header "Eu Aceito"
 
-assert check_repository "'$NAME' repository existence"
+assert test_repository "'$NAME' repository existence"
 
 if [ "$CHECK" != FAIL ]; then
-	assert check_directory "'$DIR' directory existence"
+	assert test_directory "'$DIR' directory existence"
 fi
 
 if [ "$CHECK" != FAIL ]; then
-	assert check_file "'$FILE' file existence"
+	assert test_file "'$FILE' file existence"
 fi
 
 if [ "$CHECK" != FAIL ]; then
-	assert validate_file "Valid file content"
+	assert valid_file "Valid file content"
 fi
 
 echo
