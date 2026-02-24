@@ -21,6 +21,10 @@ help:
 all: init $(NAME)
 
 
+trace:
+	@bash trace.sh
+
+
 $(NAME): REPO=$@
 
 

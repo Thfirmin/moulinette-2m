@@ -16,5 +16,6 @@ RULES:
 
 	help - display moulinette help
 	eu-aceito - tests 'Eu Aceito' projects
+	trace - display all project trace logs
 EOF
 )"

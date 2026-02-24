@@ -1,26 +1,18 @@
 #!/usr/bin/env bash
 
-source ../tools/box.sh ../tools
+cd $(dirname -- "$0")
 
-export PS4='+ [${BASH_SOURCE}:${LINENO}] '
+source "../tools/binutils.sh"
 
-LOGFILE="trace.log"
-
-: > "$LOGFILE"
-
-OUTLOG=$(mktemp --suffix=".log")
-ERRLOG=$(mktemp --suffix=".log")
-
-TMP=$(dirname -- "$OUTLOG")
+import "../tools/box.sh"
+import "../tools/logger.sh"
 
 REPO_URL="$1"
 NAME="$2"
-REPO_PATH="$TMP/$2"
+REPO_PATH="$LOG_TMP/$2"
+
 DIR="eu"
 FILE="aceito.txt"
-PAD=40
-CHECK=OK
-
 
 if [[ -z "$1" || -z "$2" ]]; then
 	str_error "Usage: $0 <repository_url> <repo_name>"
@@ -28,50 +20,8 @@ if [[ -z "$1" || -z "$2" ]]; then
 fi
 
 # =======================================
-# FUNCTIONS DEFINITION
+# CHECK FUNCTIONS DEFINITION
 # =======================================
-
-log()
-{
-	echo -e "|$(date --rfc-3339=seconds)|:[ LEVEL: ${1} ]:| >>>>>>>>>>>> BEGIN"
-	echo -e "$(cat $OUTLOG)"
-	echo -e "$(cat $ERRLOG)"
-	echo -e "<<<<<<<<<<<< END"
-}
-
-assert()
-{
-	local func="$1"
-
-	(
-		exec 3>&1
-		BASH_XTRACEFD=3
-		set -xe
-		"$func"
-	) > $OUTLOG 2> $ERRLOG
-	
-	local status=$?
-	
-	local errorlog=$(cat $ERRLOG)
-	local result
-	
-	if [ $status -eq 0 ]; then
-		[ -z "$errorlog" ] && result=OK || result=WARN
-	else
-		result=FAIL
-	fi
-
-
-	if [ "$result" = FAIL ]; then
-		CHECK=FAIL
-	elif [ "$result" = WARN ] && [ "$CHECK" != FAIL ]; then
-		CHECK=WARN
-	fi
-	
-	log "$result" >> $LOGFILE
-	echo "$errorlog" >&2
-	str_status -p $PAD "$2"  $result
-}
 
 check_repository()
 {
@@ -118,12 +68,11 @@ fi
 
 echo
 
-str_status -p $PAD "Eu aceito result" $CHECK
+str_status "Eu aceito result" $CHECK
 
-if [ "$CHECK" = FAIL ]; then
-	echo "trave log available at $(pwd)/$LOGFILE"
-fi
+log_msg
 
-rm -rf "$REPO_PATH" "$ERRLOG" "$OUTLOG"
+rm -rf "$REPO_PATH"
+log_clean
 
-[ "$CHECK" != FAIL ] || exit 1
+exit 0
