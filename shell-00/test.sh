@@ -52,6 +52,7 @@ test_ex00()
 
 	# Required file
 	test -z "$(nls "$path" z)"
+	test -f "z"
 
 	# valid file content
 	diff "$path/z" "src/z.diff"
@@ -67,6 +68,7 @@ test_ex01()
 
 	# Required file
 	test -z "$(nls "$path" testShell00.tar)"
+	test -f "$path/testShell00.tar"
 	
 	# Mount environment
 	mkdir "$path/src" &&
@@ -92,6 +94,7 @@ test_ex02()
 
 	# Required file
 	test -z "$(nls "$path" exo2.tar)"
+	test -f "$path/exo2.tar"
 
 	# Mount environment
 	mkdir "$path/src" &&
@@ -172,6 +175,7 @@ test_ex03()
 
 	# Required file
 	test -z "$(nls "$path" midLs)"
+	test -f "$path/midLs"
 
 	mkdir "$path/src"
 	mkdir "$path/src/dir1"
@@ -187,7 +191,7 @@ test_ex03()
 	touch "$path/src/.hidden_file2"
 	touch "$path/src/.hidden_file3"
 
-	test "$("$path/midLs" "$path/src")" = "file3, file2, file1, dir3/, dir2/, dir1/"
+	test "$("$path/midLs" "$path/src")" = "$(ls -mup "$path/src")"
 	
 	touch "$path/src/dir3"
 	touch "$path/src/file3"
@@ -196,7 +200,7 @@ test_ex03()
 	touch "$path/src/dir1"
 	touch "$path/src/file1"
 	
-	test "$("$path/midLs" "$path/src")" = "file1, dir1/, file2, dir2/, file3, dir3/"
+	test "$("$path/midLs" "$path/src")" = "$(ls -mup "$path/src")"
 }
 
 test_ex04()
@@ -207,7 +211,12 @@ test_ex04()
 	test -d "$path"
 
 	# Required file
-	test -z "$(nls "$path" "")"
+	test -z "$(nls "$path" "git_commit.sh")"
+	test -f "$path/git_commit.sh"
+
+	local commits=$(git log -n 5 | grep -Eio 'commit [A-Z0-9]{40}' | sed -E 's/^commit[[:space:]]+//g')
+
+	test "$("$path/git_commit.sh")" = "$commits"
 }
 
 test_ex05()
