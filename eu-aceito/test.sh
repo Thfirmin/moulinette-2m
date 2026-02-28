@@ -40,7 +40,7 @@ test_file()
 
 valid_file()
 {
-	diff "$REPO_PATH/$DIR/$FILE" "aceito.diff"
+	diff "$REPO_PATH/$DIR/$FILE" "src/aceito.diff"
 }
 
 
