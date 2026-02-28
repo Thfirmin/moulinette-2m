@@ -166,6 +166,7 @@ test_ex02()
 	)"
 }
 
+
 test_ex03()
 {
 	local path="$REPO_PATH/ex03"
@@ -191,7 +192,7 @@ test_ex03()
 	touch "$path/src/.hidden_file2"
 	touch "$path/src/.hidden_file3"
 
-	test "$("$path/midLS" "$path/src")" = "$(ls -mup "$path/src")"
+	test "$(cd "$path/src" &&  "$path/midLS")" = "$(ls -mup "$path/src")"
 	
 	touch "$path/src/dir3"
 	touch "$path/src/file3"
@@ -200,8 +201,9 @@ test_ex03()
 	touch "$path/src/dir1"
 	touch "$path/src/file1"
 	
-	test "$("$path/midLS" "$path/src")" = "$(ls -mup "$path/src")"
+	test "$(cd "$path/src" && "$path/midLS")" = "$(ls -mup "$path/src")"
 }
+
 
 test_ex04()
 {
@@ -284,6 +286,14 @@ fi
 
 if [ "$CHECK" != FAIL ]; then
 	assert test_ex02 "Exercise 02: Sim, de novo..."
+fi
+
+if [ "$CHECK" != FAIL ]; then
+	assert test_ex03 "Exercise 03: midLS"
+fi
+
+if [ "$CHECK" != FAIL ]; then
+	assert test_ex04 "Exercise 04: GIT commit"
 fi
 
 str_status "Shell 00 result" $CHECK
