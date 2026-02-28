@@ -29,7 +29,7 @@ $(NAME): REPO=$@
 
 
 $(NAME): init
-	@cd $@ && ./test.sh "$(REPO_URL)" "$(REPO)" && cd ..
+	@bash "$@/test.sh" "$(REPO_URL)" "$(REPO)"
 	@rm -rf "/tmp/$(REPO)"
 
 

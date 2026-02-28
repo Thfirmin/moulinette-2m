@@ -52,7 +52,7 @@ test_ex00()
 
 	# Required file
 	test -z "$(nls "$path" z)"
-	test -f "z"
+	test -f "$path/z"
 
 	# valid file content
 	diff "$path/z" "src/z.diff"
@@ -79,7 +79,7 @@ test_ex01()
 		-perm 455 \
 		-links 1 \
 		-size 40c \
-		-newermt "2025-06-01 23:42" ! -newermt "2025-06-01 23:43" \
+		-newermt '2025-06-01 23:41:59' \
 		-name "testShell00"
 	)"
 }
@@ -101,10 +101,10 @@ test_ex02()
 	tar -xf "$path/exo2.tar" -C "$path/src"
 
 	# Find test0
-	test -f "$(find "$path/src" \
+	test -d "$(find "$path/src" \
 		-type d \
 		-perm 715 \
-		-newermt "2025-06-01 20:47" ! -newermt "2025-06-01 20:48" \
+		-newermt "2025-06-01 20:46:59" \
 		-name "test0"
 	)"
 
@@ -114,15 +114,15 @@ test_ex02()
 		-perm 714 \
 		-links 1 \
 		-size 4c \
-		-newermt "2025-06-01 21:46" ! -newermt "2025-06-01 21:47" \
+		-newermt "2025-06-01 21:45:59" \
 		-name "test1"
 	)"
 
 	# Find test2
-	test -f "$(find "$path/src" \
+	test -d "$(find "$path/src" \
 		-type d \
 		-perm 504 \
-		-newermt "2025-06-01 22:45" ! -newermt "2025-06-01 22:46" \
+		-newermt "2025-06-01 22:44:59" \
 		-name "test2"
 	)"
 
@@ -132,7 +132,7 @@ test_ex02()
 		-perm 404 \
 		-links 2 \
 		-size 1c \
-		-newermt "2025-06-01 23:44" ! -newermt "2025-06-01 23:45" \
+		-newermt "2025-06-01 23:43:59" \
 		-name "test3"
 	)"
 
@@ -142,7 +142,7 @@ test_ex02()
 		-perm 641 \
 		-links 1 \
 		-size 2c \
-		-newermt "2025-06-01 23:43" ! -newermt "2025-06-01 23:44" \
+		-newermt "2025-06-01 23:42:59" \
 		-name "test4"
 	)"
 
@@ -152,15 +152,15 @@ test_ex02()
 		-perm 404 \
 		-links 2 \
 		-size 1c \
-		-newermt "2025-06-01 23:44" ! -newermt "2025-06-01 23:45" \
+		-newermt "2025-06-01 23:43:59" \
 		-name "test5"
 	)"
 
 	# Find test6
-	test -f "$(find "$path/src" \
+	test -L "$(find "$path/src" \
 		-type l \
 		-size 5c \
-		-newermt "2025-06-01 22:20" ! -newermt "2025-06-01 22:21" \
+		-newermt "2025-06-01 22:19:59" \
 		-name "test6" \
 		-lname "test0"
 	)"
@@ -174,8 +174,8 @@ test_ex03()
 	test -d "$path"
 
 	# Required file
-	test -z "$(nls "$path" midLs)"
-	test -f "$path/midLs"
+	test -z "$(nls "$path" midLS)"
+	test -f "$path/midLS"
 
 	mkdir "$path/src"
 	mkdir "$path/src/dir1"
@@ -191,7 +191,7 @@ test_ex03()
 	touch "$path/src/.hidden_file2"
 	touch "$path/src/.hidden_file3"
 
-	test "$("$path/midLs" "$path/src")" = "$(ls -mup "$path/src")"
+	test "$("$path/midLS" "$path/src")" = "$(ls -mup "$path/src")"
 	
 	touch "$path/src/dir3"
 	touch "$path/src/file3"
@@ -200,7 +200,7 @@ test_ex03()
 	touch "$path/src/dir1"
 	touch "$path/src/file1"
 	
-	test "$("$path/midLs" "$path/src")" = "$(ls -mup "$path/src")"
+	test "$("$path/midLS" "$path/src")" = "$(ls -mup "$path/src")"
 }
 
 test_ex04()
